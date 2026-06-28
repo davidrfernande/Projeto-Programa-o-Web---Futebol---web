@@ -1,0 +1,162 @@
+:root {
+  --page-bg: #f4f6f8;
+  --panel: #ffffff;
+  --ink: #17202a;
+  --muted: #607080;
+  --line: #dce3ea;
+  --accent: #0f766e;
+  --accent-dark: #115e59;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--page-bg);
+  color: var(--ink);
+}
+
+.page-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.brand-mark {
+  align-items: center;
+  color: #fff;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 10px;
+  letter-spacing: 0;
+}
+
+.score-ball {
+  align-items: center;
+  background: #fff;
+  border-radius: 50%;
+  color: var(--accent-dark);
+  display: inline-flex;
+  font-size: 14px;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.navbar-score {
+  background: linear-gradient(90deg, #0f766e, #164e63);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.navbar-score .nav-link,
+.navbar-score .navbar-brand {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar-score .nav-link:hover,
+.navbar-score .navbar-brand:hover {
+  color: #fff;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(20, 40, 60, 0.07);
+  padding: 22px;
+}
+
+.section-title {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-title h1,
+.section-title h2 {
+  margin: 0;
+}
+
+.section-title p {
+  color: var(--muted);
+  margin: 6px 0 0;
+}
+
+.score-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.match-line {
+  align-items: center;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.team-name {
+  font-weight: 700;
+  min-width: 0;
+}
+
+.team-name.away {
+  text-align: right;
+}
+
+.score-box {
+  background: #17202a;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  min-width: 82px;
+  padding: 6px 12px;
+  text-align: center;
+}
+
+.meta-row {
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 14px;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.toolbar {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+}
+
+.crud-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 860px) {
+  .section-title,
+  .match-line {
+    display: block;
+  }
+
+  .team-name.away {
+    text-align: left;
+  }
+
+  .score-box {
+    margin: 10px 0;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+}
