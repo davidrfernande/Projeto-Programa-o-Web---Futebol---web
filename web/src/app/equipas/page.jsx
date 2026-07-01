@@ -10,6 +10,7 @@ export default function EquipasPage() {
         description="Gerir selecoes participantes no Mundial."
         fieldName="name"
         label="Equipa"
+        hidePlaceholderTeams
       />
     </AuthGuard>
   );

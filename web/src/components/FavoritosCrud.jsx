@@ -22,11 +22,11 @@ export default function FavoritosCrud() {
 
     try {
       const teamsData = await list("teams", "populate=*");
-      setTeams(teamsData);
+      setTeams(teamsData.filter((item) => !isPlaceholderTeamName(field(item, "name"))));
 
       try {
         const favoritosData = await list("favoritos", "populate=*");
-        setFavoritos(favoritosData);
+        setFavoritos(uniqueFavoritesByTeam(favoritosData));
       } catch (err) {
         setFavoritos([]);
         setError(err.message);
@@ -90,7 +90,7 @@ export default function FavoritosCrud() {
             <Form.Select required value={team} onChange={(event) => setTeam(event.target.value)}>
               <option value="">Escolher equipa</option>
               {teams.map((item) => (
-                <option key={entryId(item)} value={entryId(item)}>
+                <option key={entryId(item)} value={field(item, "id", entryId(item))}>
                   {field(item, "name", "Sem nome")}
                 </option>
               ))}
@@ -111,7 +111,7 @@ export default function FavoritosCrud() {
         </thead>
         <tbody>
           {favoritos.map((favorito) => (
-            <tr key={entryId(favorito)}>
+            <tr key={`${entryId(favorito)}-${favoriteTeamId(favorito)}`}>
               <td>{relationName(favorito, "team")}</td>
               <td>
                 <div className="crud-actions">
@@ -137,4 +137,29 @@ export default function FavoritosCrud() {
       </Table>
     </div>
   );
+}
+
+function isPlaceholderTeamName(name) {
+  return /^[WL]\d+$/i.test((name || "").trim());
+}
+
+function uniqueFavoritesByTeam(favoritos) {
+  const seen = new Set();
+
+  return favoritos.filter((favorito) => {
+    const teamId = favoriteTeamId(favorito);
+    const key = teamId || entryId(favorito);
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
+function favoriteTeamId(favorito) {
+  const team = favorito?.team ?? favorito?.attributes?.team?.data;
+  return team?.documentId || team?.id || null;
 }

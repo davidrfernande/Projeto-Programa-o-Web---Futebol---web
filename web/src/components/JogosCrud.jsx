@@ -13,6 +13,7 @@ import {
   entryId,
   field,
   formatDate,
+  importWorldCup,
   list,
   relation,
   relationName,
@@ -38,6 +39,7 @@ export default function JogosCrud() {
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -57,7 +59,7 @@ export default function JogosCrud() {
         list("estadios", "populate=*"),
       ]);
       setJogos(jogosData);
-      setTeams(teamsData);
+      setTeams(teamsData.filter((team) => !isPlaceholderTeamName(field(team, "name"))));
       setEstadios(estadiosData);
     } catch (err) {
       setError(err.message);
@@ -138,6 +140,25 @@ export default function JogosCrud() {
     }
   }
 
+  async function handleImport() {
+    setError("");
+    setSuccess("");
+    setImporting(true);
+
+    try {
+      const result = await importWorldCup();
+      const imported = result.imported || {};
+      setSuccess(
+        `Importacao concluida: ${imported.matches || 0} jogos guardados, ${imported.teams || 0} equipas novas e ${imported.venues || 0} estadios novos.`
+      );
+      await loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setImporting(false);
+    }
+  }
+
   if (loading) return <LoadingPanel />;
 
   return (
@@ -147,6 +168,11 @@ export default function JogosCrud() {
           <h1>Jogos</h1>
           <p>Gerir calendario, resultados e relacoes entre equipas e estadios.</p>
         </div>
+        {canManage && (
+          <Button variant="outline-primary" disabled={importing} onClick={handleImport}>
+            {importing ? "A importar..." : "Importar Mundial"}
+          </Button>
+        )}
       </div>
 
       <StatusAlert error={error} success={success} />
@@ -316,4 +342,8 @@ export default function JogosCrud() {
 function toInputDate(value) {
   if (!value) return "";
   return new Date(value).toISOString().slice(0, 16);
+}
+
+function isPlaceholderTeamName(name) {
+  return /^[WL]\d+$/i.test((name || "").trim());
 }

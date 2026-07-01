@@ -9,7 +9,14 @@ import LoadingPanel from "@/components/LoadingPanel";
 import useCanManage from "@/hooks/useCanManage";
 import { createEntry, deleteEntry, entryId, field, list, updateEntry } from "@/lib/strapi";
 
-export default function SimpleCrud({ resource, title, description, fieldName, label }) {
+export default function SimpleCrud({
+  resource,
+  title,
+  description,
+  fieldName,
+  label,
+  hidePlaceholderTeams = false,
+}) {
   const emptyForm = { [fieldName]: "" };
   const canManage = useCanManage();
   const [items, setItems] = useState([]);
@@ -23,13 +30,18 @@ export default function SimpleCrud({ resource, title, description, fieldName, la
     setLoading(true);
     setError("");
     try {
-      setItems(await list(resource, "populate=*"));
+      const loadedItems = await list(resource, "populate=*");
+      setItems(
+        hidePlaceholderTeams
+          ? loadedItems.filter((item) => !isPlaceholderTeamName(field(item, fieldName)))
+          : loadedItems
+      );
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [resource]);
+  }, [fieldName, hidePlaceholderTeams, resource]);
 
   useEffect(() => {
     loadItems();
@@ -153,4 +165,8 @@ export default function SimpleCrud({ resource, title, description, fieldName, la
       </Table>
     </div>
   );
+}
+
+function isPlaceholderTeamName(name) {
+  return /^[WL]\d+$/i.test((name || "").trim());
 }

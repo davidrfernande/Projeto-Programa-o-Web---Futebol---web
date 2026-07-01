@@ -162,6 +162,15 @@ export async function deleteFavorite(id) {
   });
 }
 
+export async function importWorldCup({ league = 27, season = 188 } = {}) {
+  requireAdmin();
+
+  return strapiRequest("/api/import/world-cup", {
+    method: "POST",
+    body: JSON.stringify({ league, season }),
+  });
+}
+
 export async function login(identifier, password) {
   const payload = await strapiRequest("/api/auth/local", {
     method: "POST",
