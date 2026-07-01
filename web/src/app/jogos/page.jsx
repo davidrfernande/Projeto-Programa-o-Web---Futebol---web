@@ -1,5 +1,10 @@
+import AuthGuard from "@/components/AuthGuard";
 import JogosCrud from "@/components/JogosCrud";
 
 export default function JogosPage() {
-  return <JogosCrud />;
+  return (
+    <AuthGuard>
+      <JogosCrud />
+    </AuthGuard>
+  );
 }

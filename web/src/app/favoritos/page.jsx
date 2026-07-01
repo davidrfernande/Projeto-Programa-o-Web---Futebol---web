@@ -1,5 +1,10 @@
+import AuthGuard from "@/components/AuthGuard";
 import FavoritosCrud from "@/components/FavoritosCrud";
 
 export default function FavoritosPage() {
-  return <FavoritosCrud />;
+  return (
+    <AuthGuard>
+      <FavoritosCrud />
+    </AuthGuard>
+  );
 }
