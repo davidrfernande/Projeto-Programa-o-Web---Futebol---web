@@ -17,6 +17,8 @@ import {
   list,
   relation,
   relationName,
+  sortByField,
+  stableKey,
   updateEntry,
 } from "@/lib/strapi";
 
@@ -54,12 +56,17 @@ export default function JogosCrud() {
 
     try {
       const [jogosData, teamsData, estadiosData] = await Promise.all([
-        list("jogos", "populate=*"),
-        list("teams", "populate=*"),
+        list("jogos", "populate=*&sort=data:desc"),
+        list("teams", "populate=*&sort=name:asc"),
         list("estadios", "populate=*"),
       ]);
       setJogos(jogosData);
-      setTeams(teamsData.filter((team) => !isPlaceholderTeamName(field(team, "name"))));
+      setTeams(
+        sortByField(
+          teamsData.filter((team) => !isPlaceholderTeamName(field(team, "name"))),
+          "name"
+        )
+      );
       setEstadios(estadiosData);
     } catch (err) {
       setError(err.message);
@@ -188,8 +195,8 @@ export default function JogosCrud() {
                 onChange={(event) => updateField("equipa_casa", event.target.value)}
               >
                 <option value="">Escolher</option>
-                {teams.map((team) => (
-                  <option key={entryId(team)} value={entryId(team)}>
+                {teams.map((team, index) => (
+                  <option key={stableKey(team, "equipa-casa", index)} value={entryId(team)}>
                     {field(team, "name", "Sem nome")}
                   </option>
                 ))}
@@ -204,8 +211,8 @@ export default function JogosCrud() {
                 onChange={(event) => updateField("equipa_fora", event.target.value)}
               >
                 <option value="">Escolher</option>
-                {teams.map((team) => (
-                  <option key={entryId(team)} value={entryId(team)}>
+                {teams.map((team, index) => (
+                  <option key={stableKey(team, "equipa-fora", index)} value={entryId(team)}>
                     {field(team, "name", "Sem nome")}
                   </option>
                 ))}
@@ -220,8 +227,8 @@ export default function JogosCrud() {
                 onChange={(event) => updateField("estadio", event.target.value)}
               >
                 <option value="">Escolher</option>
-                {estadios.map((estadio) => (
-                  <option key={entryId(estadio)} value={entryId(estadio)}>
+                {estadios.map((estadio, index) => (
+                  <option key={stableKey(estadio, "estadio", index)} value={entryId(estadio)}>
                     {field(estadio, "nome", "Sem nome")}
                   </option>
                 ))}
@@ -301,8 +308,8 @@ export default function JogosCrud() {
           </tr>
         </thead>
         <tbody>
-          {jogos.map((jogo) => (
-            <tr key={entryId(jogo)}>
+          {jogos.map((jogo, index) => (
+            <tr key={stableKey(jogo, "jogo", index)}>
               <td>
                 {relationName(jogo, "equipa_casa")} vs {relationName(jogo, "equipa_fora")}
                 <div className="text-muted small">{relationName(jogo, "estadio")}</div>

@@ -70,6 +70,18 @@ export function field(entry, name, fallback = "") {
   return entry?.[name] ?? entry?.attributes?.[name] ?? fallback;
 }
 
+export function stableKey(entry, prefix = "item", index = 0) {
+  return [
+    prefix,
+    field(entry, "documentId", ""),
+    field(entry, "id", ""),
+    field(entry, "externalId", ""),
+    index,
+  ]
+    .filter((value) => value !== "" && value !== null && value !== undefined)
+    .join("-");
+}
+
 export function relation(entry, name) {
   const value = field(entry, name, null);
   return value?.data ?? value ?? null;
@@ -78,6 +90,14 @@ export function relation(entry, name) {
 export function relationName(entry, name, label = "Sem dados") {
   const related = relation(entry, name);
   return field(related, "name", field(related, "nome", label));
+}
+
+export function sortByField(entries, name) {
+  return [...entries].sort((first, second) =>
+    String(field(first, name, "")).localeCompare(String(field(second, name, "")), "pt", {
+      sensitivity: "base",
+    })
+  );
 }
 
 export function formatDate(value) {
@@ -112,11 +132,11 @@ export async function strapiRequest(path, options = {}) {
 }
 
 export async function list(resource, query = "") {
-  const suffix = query ? `?${query}` : "";
+  const suffix = `?${withPageSize(query)}`;
   const payload = await strapiRequest(`/api/${resource}${suffix}`, {
     cache: "no-store",
   });
-  return payload?.data || [];
+  return uniqueEntries(payload?.data || []);
 }
 
 export async function createEntry(resource, data) {
@@ -223,4 +243,51 @@ function requireAuth() {
   if (!isLoggedIn()) {
     throw new Error("Precisas de iniciar sessao para fazer esta acao.");
   }
+}
+
+function withPageSize(query) {
+  const pageSize = "pagination[pageSize]=200";
+
+  if (!query) return pageSize;
+  if (query.includes("pagination[pageSize]")) return query;
+
+  return `${query}&${pageSize}`;
+}
+
+function uniqueEntries(entries) {
+  const byKey = new Map();
+
+  for (const entry of entries) {
+    const key =
+      field(entry, "documentId", "") ||
+      resourceExternalKey(entry) ||
+      field(entry, "id", "");
+
+    if (!key) {
+      byKey.set(Symbol(), entry);
+      continue;
+    }
+
+    const current = byKey.get(key);
+    if (!current || entryTimestamp(entry) >= entryTimestamp(current)) {
+      byKey.set(key, entry);
+    }
+  }
+
+  return Array.from(byKey.values());
+}
+
+function resourceExternalKey(entry) {
+  const externalId = field(entry, "externalId", "");
+  return externalId ? `external-${externalId}` : "";
+}
+
+function entryTimestamp(entry) {
+  const updatedAt = field(entry, "updatedAt", field(entry, "updated_at", ""));
+  const publishedAt = field(entry, "publishedAt", field(entry, "published_at", ""));
+  const createdAt = field(entry, "createdAt", field(entry, "created_at", ""));
+  const value = updatedAt || publishedAt || createdAt || 0;
+  const parsed = Number(value) || Date.parse(value);
+
+  return Number.isNaN(parsed) ? 0 : parsed;
 }

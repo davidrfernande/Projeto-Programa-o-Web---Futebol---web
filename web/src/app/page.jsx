@@ -7,7 +7,7 @@ import Stack from "react-bootstrap/Stack";
 import Link from "next/link";
 import LoadingPanel from "@/components/LoadingPanel";
 import StatusAlert from "@/components/StatusAlert";
-import { field, formatDate, list, relationName } from "@/lib/strapi";
+import { field, formatDate, list, relationName, stableKey } from "@/lib/strapi";
 
 export default function HomePage() {
   const [jogos, setJogos] = useState([]);
@@ -20,7 +20,7 @@ export default function HomePage() {
       setError("");
 
       try {
-        setJogos(await list("jogos", "populate=*&sort=data:asc"));
+        setJogos(await list("jogos", "populate=*&sort=data:desc"));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -49,8 +49,8 @@ export default function HomePage() {
         <StatusAlert error={error} />
 
         <Stack gap={3}>
-          {jogos.map((jogo) => (
-            <article className="score-card" key={field(jogo, "documentId", field(jogo, "id"))}>
+          {jogos.map((jogo, index) => (
+            <article className="score-card" key={stableKey(jogo, "jogo", index)}>
               <div className="match-line">
                 <div className="team-name">{relationName(jogo, "equipa_casa")}</div>
                 <div className="score-box">

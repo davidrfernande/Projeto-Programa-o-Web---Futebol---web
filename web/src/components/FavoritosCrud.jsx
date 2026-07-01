@@ -6,7 +6,16 @@ import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import LoadingPanel from "@/components/LoadingPanel";
 import StatusAlert from "@/components/StatusAlert";
-import { createFavorite, deleteFavorite, entryId, field, list, relationName } from "@/lib/strapi";
+import {
+  createFavorite,
+  deleteFavorite,
+  entryId,
+  field,
+  list,
+  relationName,
+  sortByField,
+  stableKey,
+} from "@/lib/strapi";
 
 export default function FavoritosCrud() {
   const [favoritos, setFavoritos] = useState([]);
@@ -21,8 +30,13 @@ export default function FavoritosCrud() {
     setError("");
 
     try {
-      const teamsData = await list("teams", "populate=*");
-      setTeams(teamsData.filter((item) => !isPlaceholderTeamName(field(item, "name"))));
+      const teamsData = await list("teams", "populate=*&sort=name:asc");
+      setTeams(
+        sortByField(
+          teamsData.filter((item) => !isPlaceholderTeamName(field(item, "name"))),
+          "name"
+        )
+      );
 
       try {
         const favoritosData = await list("favoritos", "populate=*");
@@ -89,8 +103,8 @@ export default function FavoritosCrud() {
             <Form.Label>Equipa</Form.Label>
             <Form.Select required value={team} onChange={(event) => setTeam(event.target.value)}>
               <option value="">Escolher equipa</option>
-              {teams.map((item) => (
-                <option key={entryId(item)} value={field(item, "id", entryId(item))}>
+              {teams.map((item, index) => (
+                <option key={stableKey(item, "favorito-team", index)} value={field(item, "id", entryId(item))}>
                   {field(item, "name", "Sem nome")}
                 </option>
               ))}
@@ -110,8 +124,8 @@ export default function FavoritosCrud() {
           </tr>
         </thead>
         <tbody>
-          {favoritos.map((favorito) => (
-            <tr key={`${entryId(favorito)}-${favoriteTeamId(favorito)}`}>
+          {favoritos.map((favorito, index) => (
+            <tr key={`${stableKey(favorito, "favorito", index)}-${favoriteTeamId(favorito)}`}>
               <td>{relationName(favorito, "team")}</td>
               <td>
                 <div className="crud-actions">

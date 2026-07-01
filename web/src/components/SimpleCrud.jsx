@@ -7,7 +7,16 @@ import Table from "react-bootstrap/Table";
 import StatusAlert from "@/components/StatusAlert";
 import LoadingPanel from "@/components/LoadingPanel";
 import useCanManage from "@/hooks/useCanManage";
-import { createEntry, deleteEntry, entryId, field, list, updateEntry } from "@/lib/strapi";
+import {
+  createEntry,
+  deleteEntry,
+  entryId,
+  field,
+  list,
+  sortByField,
+  stableKey,
+  updateEntry,
+} from "@/lib/strapi";
 
 export default function SimpleCrud({
   resource,
@@ -30,12 +39,13 @@ export default function SimpleCrud({
     setLoading(true);
     setError("");
     try {
-      const loadedItems = await list(resource, "populate=*");
-      setItems(
+      const loadedItems = await list(resource, `populate=*&sort=${fieldName}:asc`);
+      const visibleItems =
         hidePlaceholderTeams
           ? loadedItems.filter((item) => !isPlaceholderTeamName(field(item, fieldName)))
-          : loadedItems
-      );
+          : loadedItems;
+
+      setItems(sortByField(visibleItems, fieldName));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -137,8 +147,8 @@ export default function SimpleCrud({
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
-            <tr key={entryId(item)}>
+          {items.map((item, index) => (
+            <tr key={stableKey(item, resource, index)}>
               <td>{field(item, fieldName, "Sem nome")}</td>
               {canManage && (
                 <td>
