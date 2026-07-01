@@ -6,10 +6,12 @@ import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import StatusAlert from "@/components/StatusAlert";
 import LoadingPanel from "@/components/LoadingPanel";
+import useCanManage from "@/hooks/useCanManage";
 import { createEntry, deleteEntry, entryId, field, list, updateEntry } from "@/lib/strapi";
 
 export default function SimpleCrud({ resource, title, description, fieldName, label }) {
   const emptyForm = { [fieldName]: "" };
+  const canManage = useCanManage();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState(null);
@@ -91,54 +93,58 @@ export default function SimpleCrud({ resource, title, description, fieldName, la
 
       <StatusAlert error={error} success={success} />
 
-      <Form className="mb-4" onSubmit={handleSubmit}>
-        <div className="toolbar">
-          <Form.Group className="grid-wide">
-            <Form.Label>{label}</Form.Label>
-            <Form.Control
-              required
-              value={form[fieldName]}
-              onChange={(event) => setForm({ [fieldName]: event.target.value })}
-              placeholder={`Nome do ${label.toLowerCase()}`}
-            />
-          </Form.Group>
-          <Button type="submit" variant="success">
-            {editing ? "Guardar" : "Criar"}
-          </Button>
-          {editing && (
-            <Button type="button" variant="outline-secondary" onClick={resetForm}>
-              Cancelar
+      {canManage && (
+        <Form className="mb-4" onSubmit={handleSubmit}>
+          <div className="toolbar">
+            <Form.Group className="grid-wide">
+              <Form.Label>{label}</Form.Label>
+              <Form.Control
+                required
+                value={form[fieldName]}
+                onChange={(event) => setForm({ [fieldName]: event.target.value })}
+                placeholder={`Nome do ${label.toLowerCase()}`}
+              />
+            </Form.Group>
+            <Button type="submit" variant="success">
+              {editing ? "Guardar" : "Criar"}
             </Button>
-          )}
-        </div>
-      </Form>
+            {editing && (
+              <Button type="button" variant="outline-secondary" onClick={resetForm}>
+                Cancelar
+              </Button>
+            )}
+          </div>
+        </Form>
+      )}
 
       <Table bordered hover responsive>
         <thead>
           <tr>
             <th>{label}</th>
-            <th className="text-end">Acoes</th>
+            {canManage && <th className="text-end">Acoes</th>}
           </tr>
         </thead>
         <tbody>
           {items.map((item) => (
             <tr key={entryId(item)}>
               <td>{field(item, fieldName, "Sem nome")}</td>
-              <td>
-                <div className="crud-actions">
-                  <Button size="sm" variant="outline-primary" onClick={() => startEdit(item)}>
-                    Editar
-                  </Button>
-                  <Button size="sm" variant="outline-danger" onClick={() => handleDelete(item)}>
-                    Apagar
-                  </Button>
-                </div>
-              </td>
+              {canManage && (
+                <td>
+                  <div className="crud-actions">
+                    <Button size="sm" variant="outline-primary" onClick={() => startEdit(item)}>
+                      Editar
+                    </Button>
+                    <Button size="sm" variant="outline-danger" onClick={() => handleDelete(item)}>
+                      Apagar
+                    </Button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
           {items.length === 0 && (
             <tr>
-              <td className="text-center text-muted" colSpan="2">
+              <td className="text-center text-muted" colSpan={canManage ? 2 : 1}>
                 Sem registos.
               </td>
             </tr>

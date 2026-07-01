@@ -6,6 +6,7 @@ import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import LoadingPanel from "@/components/LoadingPanel";
 import StatusAlert from "@/components/StatusAlert";
+import useCanManage from "@/hooks/useCanManage";
 import {
   createEntry,
   deleteEntry,
@@ -30,6 +31,7 @@ const emptyForm = {
 };
 
 export default function JogosCrud() {
+  const canManage = useCanManage();
   const [jogos, setJogos] = useState([]);
   const [teams, setTeams] = useState([]);
   const [estadios, setEstadios] = useState([]);
@@ -149,116 +151,118 @@ export default function JogosCrud() {
 
       <StatusAlert error={error} success={success} />
 
-      <Form className="mb-4" onSubmit={handleSubmit}>
-        <div className="toolbar">
-          <Form.Group>
-            <Form.Label>Equipa casa</Form.Label>
-            <Form.Select
-              required
-              value={form.equipa_casa}
-              onChange={(event) => updateField("equipa_casa", event.target.value)}
-            >
-              <option value="">Escolher</option>
-              {teams.map((team) => (
-                <option key={entryId(team)} value={entryId(team)}>
-                  {field(team, "name", "Sem nome")}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+      {canManage && (
+        <Form className="mb-4" onSubmit={handleSubmit}>
+          <div className="toolbar">
+            <Form.Group>
+              <Form.Label>Equipa casa</Form.Label>
+              <Form.Select
+                required
+                value={form.equipa_casa}
+                onChange={(event) => updateField("equipa_casa", event.target.value)}
+              >
+                <option value="">Escolher</option>
+                {teams.map((team) => (
+                  <option key={entryId(team)} value={entryId(team)}>
+                    {field(team, "name", "Sem nome")}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Equipa fora</Form.Label>
-            <Form.Select
-              required
-              value={form.equipa_fora}
-              onChange={(event) => updateField("equipa_fora", event.target.value)}
-            >
-              <option value="">Escolher</option>
-              {teams.map((team) => (
-                <option key={entryId(team)} value={entryId(team)}>
-                  {field(team, "name", "Sem nome")}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+            <Form.Group>
+              <Form.Label>Equipa fora</Form.Label>
+              <Form.Select
+                required
+                value={form.equipa_fora}
+                onChange={(event) => updateField("equipa_fora", event.target.value)}
+              >
+                <option value="">Escolher</option>
+                {teams.map((team) => (
+                  <option key={entryId(team)} value={entryId(team)}>
+                    {field(team, "name", "Sem nome")}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Estadio</Form.Label>
-            <Form.Select
-              required
-              value={form.estadio}
-              onChange={(event) => updateField("estadio", event.target.value)}
-            >
-              <option value="">Escolher</option>
-              {estadios.map((estadio) => (
-                <option key={entryId(estadio)} value={entryId(estadio)}>
-                  {field(estadio, "nome", "Sem nome")}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+            <Form.Group>
+              <Form.Label>Estadio</Form.Label>
+              <Form.Select
+                required
+                value={form.estadio}
+                onChange={(event) => updateField("estadio", event.target.value)}
+              >
+                <option value="">Escolher</option>
+                {estadios.map((estadio) => (
+                  <option key={entryId(estadio)} value={entryId(estadio)}>
+                    {field(estadio, "nome", "Sem nome")}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Data</Form.Label>
-            <Form.Control
-              type="datetime-local"
-              value={form.data}
-              onChange={(event) => updateField("data", event.target.value)}
-            />
-          </Form.Group>
+            <Form.Group>
+              <Form.Label>Data</Form.Label>
+              <Form.Control
+                type="datetime-local"
+                value={form.data}
+                onChange={(event) => updateField("data", event.target.value)}
+              />
+            </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Fase</Form.Label>
-            <Form.Control
-              value={form.fase}
-              onChange={(event) => updateField("fase", event.target.value)}
-              placeholder="Grupo A"
-            />
-          </Form.Group>
+            <Form.Group>
+              <Form.Label>Fase</Form.Label>
+              <Form.Control
+                value={form.fase}
+                onChange={(event) => updateField("fase", event.target.value)}
+                placeholder="Grupo A"
+              />
+            </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Estado</Form.Label>
-            <Form.Select
-              value={form.estado}
-              onChange={(event) => updateField("estado", event.target.value)}
-            >
-              <option>Agendado</option>
-              <option>A decorrer</option>
-              <option>Terminado</option>
-            </Form.Select>
-          </Form.Group>
+            <Form.Group>
+              <Form.Label>Estado</Form.Label>
+              <Form.Select
+                value={form.estado}
+                onChange={(event) => updateField("estado", event.target.value)}
+              >
+                <option>Agendado</option>
+                <option>A decorrer</option>
+                <option>Terminado</option>
+              </Form.Select>
+            </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Golos casa</Form.Label>
-            <Form.Control
-              min="0"
-              type="number"
-              value={form.golos_casa}
-              onChange={(event) => updateField("golos_casa", event.target.value)}
-            />
-          </Form.Group>
+            <Form.Group>
+              <Form.Label>Golos casa</Form.Label>
+              <Form.Control
+                min="0"
+                type="number"
+                value={form.golos_casa}
+                onChange={(event) => updateField("golos_casa", event.target.value)}
+              />
+            </Form.Group>
 
-          <Form.Group>
-            <Form.Label>Golos fora</Form.Label>
-            <Form.Control
-              min="0"
-              type="number"
-              value={form.golos_fora}
-              onChange={(event) => updateField("golos_fora", event.target.value)}
-            />
-          </Form.Group>
+            <Form.Group>
+              <Form.Label>Golos fora</Form.Label>
+              <Form.Control
+                min="0"
+                type="number"
+                value={form.golos_fora}
+                onChange={(event) => updateField("golos_fora", event.target.value)}
+              />
+            </Form.Group>
 
-          <Button disabled={!canSubmit} type="submit" variant="success">
-            {editing ? "Guardar" : "Criar"}
-          </Button>
-          {editing && (
-            <Button type="button" variant="outline-secondary" onClick={resetForm}>
-              Cancelar
+            <Button disabled={!canSubmit} type="submit" variant="success">
+              {editing ? "Guardar" : "Criar"}
             </Button>
-          )}
-        </div>
-      </Form>
+            {editing && (
+              <Button type="button" variant="outline-secondary" onClick={resetForm}>
+                Cancelar
+              </Button>
+            )}
+          </div>
+        </Form>
+      )}
 
       <Table bordered hover responsive>
         <thead>
@@ -267,7 +271,7 @@ export default function JogosCrud() {
             <th>Resultado</th>
             <th>Data</th>
             <th>Estado</th>
-            <th className="text-end">Acoes</th>
+            {canManage && <th className="text-end">Acoes</th>}
           </tr>
         </thead>
         <tbody>
@@ -282,21 +286,23 @@ export default function JogosCrud() {
               </td>
               <td>{formatDate(field(jogo, "data"))}</td>
               <td>{field(jogo, "estado", "Agendado")}</td>
-              <td>
-                <div className="crud-actions">
-                  <Button size="sm" variant="outline-primary" onClick={() => startEdit(jogo)}>
-                    Editar
-                  </Button>
-                  <Button size="sm" variant="outline-danger" onClick={() => handleDelete(jogo)}>
-                    Apagar
-                  </Button>
-                </div>
-              </td>
+              {canManage && (
+                <td>
+                  <div className="crud-actions">
+                    <Button size="sm" variant="outline-primary" onClick={() => startEdit(jogo)}>
+                      Editar
+                    </Button>
+                    <Button size="sm" variant="outline-danger" onClick={() => handleDelete(jogo)}>
+                      Apagar
+                    </Button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
           {jogos.length === 0 && (
             <tr>
-              <td className="text-center text-muted" colSpan="5">
+              <td className="text-center text-muted" colSpan={canManage ? 5 : 4}>
                 Sem jogos registados.
               </td>
             </tr>

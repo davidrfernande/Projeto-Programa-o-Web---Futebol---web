@@ -4,6 +4,7 @@ export const STRAPI_URL =
 const TOKEN_KEY = "jwt";
 const USER_KEY = "user";
 const AUTH_EVENT = "auth-changed";
+const ADMIN_ROLE_TYPE = "admin";
 
 function endpoint(path) {
   return `${STRAPI_URL}${path.startsWith("/") ? path : `/${path}`}`;
@@ -29,6 +30,14 @@ export function getUser() {
 
 export function isLoggedIn() {
   return !!getToken();
+}
+
+export function isAdminUser(user = getUser()) {
+  const role = user?.role;
+  const roleType = role?.type?.toLowerCase();
+  const roleName = role?.name?.toLowerCase();
+
+  return roleType === ADMIN_ROLE_TYPE || roleName === "admin" || roleName === "administrador";
 }
 
 export function saveSession({ jwt, user }) {
@@ -111,7 +120,7 @@ export async function list(resource, query = "") {
 }
 
 export async function createEntry(resource, data) {
-  requireAuth();
+  requireAdmin();
 
   return strapiRequest(`/api/${resource}`, {
     method: "POST",
@@ -120,7 +129,7 @@ export async function createEntry(resource, data) {
 }
 
 export async function updateEntry(resource, id, data) {
-  requireAuth();
+  requireAdmin();
 
   return strapiRequest(`/api/${resource}/${id}`, {
     method: "PUT",
@@ -129,9 +138,26 @@ export async function updateEntry(resource, id, data) {
 }
 
 export async function deleteEntry(resource, id) {
-  requireAuth();
+  requireAdmin();
 
   return strapiRequest(`/api/${resource}/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export async function createFavorite(team) {
+  requireAuth();
+
+  return strapiRequest("/api/favoritos", {
+    method: "POST",
+    body: JSON.stringify({ data: { team } }),
+  });
+}
+
+export async function deleteFavorite(id) {
+  requireAuth();
+
+  return strapiRequest(`/api/favoritos/${id}`, {
     method: "DELETE",
   });
 }
@@ -142,7 +168,8 @@ export async function login(identifier, password) {
     body: JSON.stringify({ identifier, password }),
   });
   saveSession(payload);
-  return payload;
+  await refreshCurrentUser().catch(() => null);
+  return getUser() || payload.user;
 }
 
 export async function register(username, email, password) {
@@ -151,7 +178,19 @@ export async function register(username, email, password) {
     body: JSON.stringify({ username, email, password }),
   });
   saveSession(payload);
-  return payload;
+  await refreshCurrentUser().catch(() => null);
+  return getUser() || payload.user;
+}
+
+export async function refreshCurrentUser() {
+  if (!isLoggedIn()) return null;
+
+  const user = await strapiRequest("/api/users/me?populate=role", {
+    cache: "no-store",
+  });
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  window.dispatchEvent(new Event(AUTH_EVENT));
+  return user;
 }
 
 function withPublish(data) {
@@ -159,6 +198,16 @@ function withPublish(data) {
     ...data,
     publishedAt: data.publishedAt || new Date().toISOString(),
   };
+}
+
+function requireAdmin() {
+  if (!isLoggedIn()) {
+    throw new Error("Precisas de iniciar sessao para fazer esta acao.");
+  }
+
+  if (!isAdminUser()) {
+    throw new Error("Apenas administradores podem fazer esta acao.");
+  }
 }
 
 function requireAuth() {

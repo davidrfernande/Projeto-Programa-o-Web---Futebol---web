@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import LoadingPanel from "@/components/LoadingPanel";
 import StatusAlert from "@/components/StatusAlert";
-import { createEntry, deleteEntry, entryId, field, list, relationName } from "@/lib/strapi";
+import { createFavorite, deleteFavorite, entryId, field, list, relationName } from "@/lib/strapi";
 
 export default function FavoritosCrud() {
   const [favoritos, setFavoritos] = useState([]);
@@ -21,12 +21,16 @@ export default function FavoritosCrud() {
     setError("");
 
     try {
-      const [favoritosData, teamsData] = await Promise.all([
-        list("favoritos", "populate=*"),
-        list("teams", "populate=*"),
-      ]);
-      setFavoritos(favoritosData);
+      const teamsData = await list("teams", "populate=*");
       setTeams(teamsData);
+
+      try {
+        const favoritosData = await list("favoritos", "populate=*");
+        setFavoritos(favoritosData);
+      } catch (err) {
+        setFavoritos([]);
+        setError(err.message);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -44,7 +48,7 @@ export default function FavoritosCrud() {
     setSuccess("");
 
     try {
-      await createEntry("favoritos", { team });
+      await createFavorite(team);
       setTeam("");
       setSuccess("Favorito criado com sucesso.");
       await loadData();
@@ -58,7 +62,7 @@ export default function FavoritosCrud() {
     setSuccess("");
 
     try {
-      await deleteEntry("favoritos", entryId(favorito));
+      await deleteFavorite(entryId(favorito));
       setSuccess("Favorito apagado com sucesso.");
       await loadData();
     } catch (err) {
@@ -111,7 +115,11 @@ export default function FavoritosCrud() {
               <td>{relationName(favorito, "team")}</td>
               <td>
                 <div className="crud-actions">
-                  <Button size="sm" variant="outline-danger" onClick={() => handleDelete(favorito)}>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    onClick={() => handleDelete(favorito)}
+                  >
                     Apagar
                   </Button>
                 </div>
