@@ -9,8 +9,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt">
-      <body>
+    <html lang="pt" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <AppNavbar />
         <main className="page-shell">{children}</main>
       </body>

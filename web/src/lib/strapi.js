@@ -1,5 +1,5 @@
 export const STRAPI_URL =
-  process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1338";
 
 const TOKEN_KEY = "jwt";
 const USER_KEY = "user";
